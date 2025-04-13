@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("--wandb-project", default="activation_collection")
     parser.add_argument("--activation-store-dir", type=str, required=True)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--context-len", type=int, default=1024)
+    parser.add_argument("--context-len", type=lambda x: None if x.lower() == "none" else int(x), default=None)
     parser.add_argument(
         "--layers",
         type=int,
@@ -63,6 +63,12 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="Overwrite the text column in the dataset to collect activations from",
+    )
+    parser.add_argument(
+        "--shard-size",
+        type=int,
+        default=10**6,
+        help="The number of tokens processed per shard",
     )
     parser.add_argument(
         "--overwrite", action="store_true", help="Overwrite existing activations"
@@ -134,7 +140,7 @@ if __name__ == "__main__":
         text_column = args.text_column
 
     if text_column != "text":
-        args.dataset_split = f"{args.dataset_split}-col{text_column}"
+        args.dataset_split = f"{args.dataset_split}-col-{text_column}"
     
     print("Text column=", text_column)
     out_dir = store_dir / args.model.split("/")[-1] / dataset_name / args.dataset_split
@@ -149,14 +155,14 @@ if __name__ == "__main__":
         out_dir,
         shuffle_shards=False,
         io="out",
-        shard_size=10**6,
+        shard_size=args.shard_size,
         batch_size=args.batch_size,
-        context_len=1024,
+        context_len=args.context_len,
         d_model=d_model,
         last_submodule=submodules[-1],
-        max_total_tokens=args.max_tokens,
+        max_total_tokens=args.max_tokens, 
         store_tokens=args.store_tokens,
         multiprocessing=not args.disable_multiprocessing,
-        ignore_first_n_tokens_per_sample=CFG["ignore_first_n_tokens_per_sample"],
+        ignore_first_n_tokens_per_sample=CFG["ignore_first_n_tokens_per_sample"], 
         overwrite=args.overwrite,
     )
