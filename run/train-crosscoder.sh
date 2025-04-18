@@ -10,6 +10,7 @@ ACTIVATION_DIR="$DATASTORE/activations/"
 LAYER=13
 BASE_MODEL="google/gemma-2-2b"
 INSTRUCT_MODEL="google/gemma-2-2b-it"
+INSTRUCT_MODEL="google/gemma-2-2b-it"
 DEVICE="cuda"
 LR=1e-4
 MU=0.041
