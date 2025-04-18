@@ -28,6 +28,12 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--context-len", type=lambda x: None if x.lower() == "none" else int(x), default=None)
     parser.add_argument(
+        "--tokenizer", 
+        type=str, 
+        required=False,
+        help="Tokenizer to use for activation collection. Define here if it's not the same as the model."
+    )
+    parser.add_argument(
         "--layers",
         type=int,
         nargs="+",
@@ -68,7 +74,7 @@ if __name__ == "__main__":
         "--shard-size",
         type=int,
         default=10**6,
-        help="The number of tokens processed per shard",
+        help="The number of tokens processed per shard. Adjust based on available RAM.",
     )
     parser.add_argument(
         "--overwrite", action="store_true", help="Overwrite existing activations"
@@ -114,7 +120,10 @@ if __name__ == "__main__":
         torch_dtype=dtype,
         attn_implementation=MODEL_CONFIGS[args.model]["attn_implementation"],
     )
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    if args.tokenizer is None:
+        tokenizer = AutoTokenizer.from_pretrained(args.model)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     nnmodel = LanguageModel(model, tokenizer=tokenizer)
     print("dtype=",nnmodel.dtype)
     num_layers = int(len(nnmodel.model.layers))
