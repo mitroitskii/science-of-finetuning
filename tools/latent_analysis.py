@@ -259,6 +259,7 @@ def latent_statistics(
     instruction_model,
     ae,
     layer,
+    max_length=1024,
     batch_size=128,
     non_zero_threshold=1e-8,
     text_column="text",
@@ -271,7 +272,7 @@ def latent_statistics(
         tokens = tokenizer(
             batch[text_column],
             return_tensors="pt",
-            max_length=1024,
+            max_length=max_length,
             truncation=True,
             padding=True,
         )
