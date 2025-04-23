@@ -19,3 +19,4 @@ MODEL_CONFIGS = {
 MODEL_CONFIGS["google/gemma-2-2b-it"] = MODEL_CONFIGS["google/gemma-2-2b"]
 MODEL_CONFIGS["Qwen/Qwen2.5-1.5B-Instruct"] = MODEL_CONFIGS["Qwen/Qwen2.5-1.5B"]
 MODEL_CONFIGS["agentica-org/DeepScaleR-1.5B-Preview"] = MODEL_CONFIGS["Qwen/Qwen2.5-Math-1.5B"]
+MODEL_CONFIGS["deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"] = MODEL_CONFIGS["Qwen/Qwen2.5-Math-1.5B"]

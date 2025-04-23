@@ -67,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--activation-store-dir", type=str, default="~/data/activations")
     parser.add_argument("--text-column", type=str, default="text")
     parser.add_argument("--base-model", type=str, default="Qwen/Qwen2.5-Math-1.5B")
-    parser.add_argument("--reasoning-model", type=str, default="agentic/DeepScaleR-1.5B-Preview")
+    parser.add_argument("--reasoning-model", type=str, default="agentica-org/DeepScaleR-1.5B-Preview")
     parser.add_argument("--layer", type=int, default=15)
     parser.add_argument("--expansion-factor", type=int, default=32)
     parser.add_argument("--same-init-for-all-layers", action="store_true")
