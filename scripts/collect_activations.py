@@ -15,6 +15,7 @@ os.environ["WANDB__SERVICE_WAIT"] = "300"
 
 from tools.configs import MODEL_CONFIGS
 
+
 th.set_float32_matmul_precision("medium")
 
 if __name__ == "__main__":
@@ -26,10 +27,11 @@ if __name__ == "__main__":
     parser.add_argument("--wandb-project", default="activation_collection")
     parser.add_argument("--activation-store-dir", type=str, required=True)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--context-len", type=lambda x: None if x.lower() == "none" else int(x), default=None)
+    parser.add_argument("--context-len", type=lambda x: None if x.lower()
+                        == "none" else int(x), default=None)
     parser.add_argument(
-        "--tokenizer", 
-        type=str, 
+        "--tokenizer",
+        type=str,
         required=False,
         help="Tokenizer to use for activation collection. Define here if it's not the same as the model."
     )
@@ -88,6 +90,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dtype", type=str, default="bfloat16", help="Data type to use for activations"
     )
+    parser.add_argument(
+        "--device-map", type=str, default="auto", help="Device map for model loading (e.g., 'auto', 'cuda:0')"
+    )
     args = parser.parse_args()
 
     if args.dtype == "bfloat16":
@@ -105,18 +110,18 @@ if __name__ == "__main__":
     if args.wandb:
         import wandb
         wandb.init(
-            name=args.model.split("/")[-1] + "_" + args.dataset.split("/")[-1] + "_" + args.dataset_split,
+            name=args.model.split(
+                "/")[-1] + "_" + args.dataset.split("/")[-1] + "_" + args.dataset_split,
             entity=args.wandb_entity,
             project=args.wandb_project,
             config=args,
         )
 
-
     CFG = MODEL_CONFIGS[args.model]
     print("MODEL_CONFIGS=", CFG)
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
-        device_map="auto",
+        device_map=args.device_map,
         torch_dtype=dtype,
         attn_implementation=MODEL_CONFIGS[args.model]["attn_implementation"],
     )
@@ -125,7 +130,7 @@ if __name__ == "__main__":
     else:
         tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     nnmodel = LanguageModel(model, tokenizer=tokenizer)
-    print("dtype=",nnmodel.dtype)
+    print("dtype=", nnmodel.dtype)
     num_layers = int(len(nnmodel.model.layers))
     layers = args.layers
     logger.info(f"Collecting activations from layers: {layers}")
@@ -142,17 +147,17 @@ if __name__ == "__main__":
     dataset = load_dataset(args.dataset, split=args.dataset_split)
     dataset = dataset.select(range(min(args.max_samples, len(dataset))))
 
-
     text_column = MODEL_CONFIGS[args.model]["text_column"]
-    
+
     if args.text_column is not None:
         text_column = args.text_column
 
     if text_column != "text":
         args.dataset_split = f"{args.dataset_split}-col-{text_column}"
-    
+
     print("Text column=", text_column)
-    out_dir = store_dir / args.model.split("/")[-1] / dataset_name / args.dataset_split
+    out_dir = store_dir / \
+        args.model.split("/")[-1] / dataset_name / args.dataset_split
     out_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Collecting activations to {out_dir}")
     time.sleep(10)
@@ -169,9 +174,9 @@ if __name__ == "__main__":
         context_len=args.context_len,
         d_model=d_model,
         last_submodule=submodules[-1],
-        max_total_tokens=args.max_tokens, 
+        max_total_tokens=args.max_tokens,
         store_tokens=args.store_tokens,
         multiprocessing=not args.disable_multiprocessing,
-        ignore_first_n_tokens_per_sample=CFG["ignore_first_n_tokens_per_sample"], 
+        ignore_first_n_tokens_per_sample=CFG["ignore_first_n_tokens_per_sample"],
         overwrite=args.overwrite,
     )

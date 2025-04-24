@@ -6,7 +6,7 @@ MODEL_CONFIGS = {
         "attn_implementation": None,
     },
     "Qwen/Qwen2.5-Math-1.5B": {
-        "ignore_first_n_tokens_per_sample": 0,
+        "ignore_first_n_tokens_per_sample": 1,
         "text_column": "message_qwen2.5_chat_template",
         "attn_implementation": None,
     },
@@ -15,8 +15,14 @@ MODEL_CONFIGS = {
         "text_column": "text",
         "attn_implementation": "eager",
     },
+    "meta-llama/Llama-3.1-8B": {
+        "ignore_first_n_tokens_per_sample": 1,
+        "text_column": "message_llama_chat_template",
+        "attn_implementation": "flash_attention_2",
+    },
 }
 MODEL_CONFIGS["google/gemma-2-2b-it"] = MODEL_CONFIGS["google/gemma-2-2b"]
 MODEL_CONFIGS["Qwen/Qwen2.5-1.5B-Instruct"] = MODEL_CONFIGS["Qwen/Qwen2.5-1.5B"]
 MODEL_CONFIGS["agentica-org/DeepScaleR-1.5B-Preview"] = MODEL_CONFIGS["Qwen/Qwen2.5-Math-1.5B"]
 MODEL_CONFIGS["deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"] = MODEL_CONFIGS["Qwen/Qwen2.5-Math-1.5B"]
+MODEL_CONFIGS["deepseek-ai/DeepSeek-R1-Distill-Llama-8B"] = MODEL_CONFIGS["meta-llama/Llama-3.1-8B"]

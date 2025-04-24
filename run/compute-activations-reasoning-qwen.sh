@@ -3,23 +3,22 @@
 set -x
 
 # Define datasets and other constants
-# DATASET=koyena/OpenR1-Math-220k-formatted # math reasoning 
-DATASET=science-of-finetuning/fineweb-1m-sample # fineweb
+DATASET=koyena/Magpie-Reasoning-V2-250K-CoT-Deepseek-R1-Llama-70B-formatted # reasoning 
+# DATASET=science-of-finetuning/fineweb-1m-sample # fineweb
 ACTIVATION_STORE_DIR=~/data/activations
-# REASONING_MODEL=agentica-org/DeepScaleR-1.5B-Preview # math reasoning
 REASONING_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
 
-BASE_MODEL=Qwen/Qwen2.5-Math-1.5B
-TOKENIZER=agentica-org/DeepScaleR-1.5B-Preview
+BASE_MODEL=meta-llama/Llama-3.1-8B
+TOKENIZER=deepseek-ai/DeepSeek-R1-Distill-Llama-8B  
 CONTEXT_LEN=5000
-LAYERS=15
+LAYERS="5 11 17 23 29" # 32 total layers in llama-3.1-8b 0 - 5 - 11 - 17 - 23 - 29 - 31
 SHARD_SIZE=1_000_000
+
 # Initialize variables for command-line arguments
-BATCH_SIZE=1
+BATCH_SIZE=64
+DEVICE_MAP="auto"
 SPLIT_ARG="train"
 OTHER_FLAGS=""
-# INPUT_COLUMN=message_in_chat_template # math reasoning
-INPUT_COLUMN=text # fineweb
 REASONING_ONLY=false
 BASE_ONLY=false
 WANDB_ENTITY=tentative
@@ -35,10 +34,6 @@ while [ $# -gt 0 ]; do
             WANDB_ENTITY="$2"
             shift 2
             ;;
-        --input-column)
-            INPUT_COLUMN="$2"
-            shift 2
-            ;;
         --batch-size)
             BATCH_SIZE="$2"
             shift 2
@@ -51,10 +46,12 @@ while [ $# -gt 0 ]; do
             BASE_ONLY=true
             shift
             ;;
+        --device-map)
+            DEVICE_MAP="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown argument: $1"
-            # echo "Usage: $0 --split <train|test> [--reasoning-only] [--base-only]" # math reasoning
-            echo "Usage: $0 --split <train|validation> --batch-size <batch-size> [--reasoning-only] [--base-only]" # fineweb
             exit 1
             ;;
     esac
@@ -62,25 +59,19 @@ done
 
 # Validate that both arguments were supplied
 if [ -z "$SPLIT_ARG" ]; then
-    # echo "Usage: $0 --split <train|test>" # math reasoning
-    echo "Usage: $0 --split <train|validation> --batch-size <batch-size>" # fineweb
+    echo "Usage: $0 --split <train|validation> --batch-size <batch-size>"
     exit 1
 fi
 
 # Validate split argument and set corresponding values
 if [ "$SPLIT_ARG" == "train" ]; then
     SPLIT="train"
-    # N_TOKS=200_000_000 # math reasoning
-    N_TOKS=100_000_000 # fineweb
-# elif [ "$SPLIT_ARG" == "test" ]; then # math reasoning
-    # SPLIT="test"
-elif [ "$SPLIT_ARG" == "validation" ]; then # fineweb
+    N_TOKS=200_000_000
+elif [ "$SPLIT_ARG" == "validation" ]; then
     SPLIT="validation"
-    # N_TOKS=20_000_000 # math reasoning
-    N_TOKS=10_000_000 # fineweb
+    N_TOKS=2_000_000
 else
-    # echo "Error: --split must be either 'train' or 'test'" # math reasoning
-    echo "Error: --split must be either 'train' or 'validation'" # fineweb
+    echo "Error: --split must be either 'train' or 'validation'"
     exit 1
 fi
 
@@ -88,8 +79,9 @@ fi
 COMMON_FLAGS="--wandb --overwrite 
 --tokenizer $TOKENIZER \
 --wandb-entity $WANDB_ENTITY \
+--device-map $DEVICE_MAP \
 --disable-multiprocessing \
---dtype float32 \
+--dtype bfloat16 \
 --store-tokens \
 --batch-size $BATCH_SIZE \
 --context-len $CONTEXT_LEN \
@@ -98,7 +90,6 @@ COMMON_FLAGS="--wandb --overwrite
 --dataset-split $SPLIT \
 --shard-size $SHARD_SIZE \
 --activation-store-dir $ACTIVATION_STORE_DIR \
---text-column $INPUT_COLUMN \
 --max-tokens $N_TOKS" 
 
  
