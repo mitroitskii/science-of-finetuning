@@ -2,6 +2,21 @@
 
 set -x
 
+# NOTE on batch size:
+# The optimal batch size seems to be just 1 and ran on a single GPU
+# - to check, ran with different sizes and see how long it takes to cache and store 1 share
+# Notice, that total time to run is NOT AS PREDICTED BY THE PROGRESS BAR
+# Instead, it is num_of_shards * time_per_shard
+
+# NOTE ⚠️:
+# Do NOT cache with different batch sizes for the same dataset
+# This will lead to different shard sizes and different token counts
+
+
+# NOTE on training several layers at once:
+# tokens.pt is only saved for the last layer on the list
+# need to manually copy the tokens.pt file to the other layer dirs
+
 # Define datasets and other constants
 CHAT_DATASET=science-of-finetuning/lmsys-chat-1m-chat-formatted
 FINEWEB_DATASET=science-of-finetuning/fineweb-1m-sample
