@@ -8,7 +8,7 @@ from dictionary_learning.cache import PairedActivationCache
 from tools.compute_utils import *
 from tools.cc_utils import *
 from tools.plotting_utils import *
-from tools.tokenization_utils import *
+# from tools.tokenization_utils import * # FIXME: does not seem to be used but throws a warning in the training script
 
 
 def apply_masks(values: th.Tensor, masks: List[th.Tensor]) -> th.Tensor:
@@ -159,6 +159,7 @@ def load_json(path: Path):
 def save_json(data, path: Path):
     with open(path, "w") as f:
         json.dump(data, f)
+
 
 def auto_device(device: str):
     if device == "auto":

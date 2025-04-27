@@ -5,25 +5,39 @@ set -x
 DATASTORE="$HOME/data"
 ACTIVATION_DIR="$DATASTORE/activations/"
 
-BASE_MODEL="Qwen/Qwen2.5-Math-1.5B"
-REASONING_MODEL="agentic/DeepScaleR-1.5B-Preview"
+BASE_MODEL="meta-llama/Llama-3.1-8B"
+REASONING_MODEL="deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
 
 # Model configuration
-NUM_SAMPLES=300_000_000
-NUM_VALIDATION_SAMPLES=10_000_000
+NUM_TOKENS=400_000_000
+NUM_VALIDATION_TOKENS=1_000_000
 LAYER=15
-EXPANSION_FACTOR=32
+EXPANSION_FACTOR=32 
+ # for 8B model
 BATCH_SIZE=2048
 MU=3.6e-2
 LR=1e-4
-EPOCHS=2
-VALIDATE_EVERY_N_STEPS=15_000
-# Parse command line arguments to check for custom mu value
+EPOCHS=1
+VALIDATE_EVERY_N_STEPS=10_000 # total steps for len 400_000_000 and bs 2048 is ~195000
+DEVICE="cuda" # Default device
+
+# Parse command line arguments to check for custom mu value and layer
 custom_mu=false
+custom_layer=false
+custom_device=false
+custom_batch_size=false
 for arg in "$@"; do
     if [[ $arg == --mu* ]]; then
         custom_mu=true
-        break
+    fi
+    if [[ $arg == --layer* ]]; then
+        custom_layer=true
+    fi
+    if [[ $arg == --device* ]]; then
+        custom_device=true
+    fi
+    if [[ $arg == --batch-size* ]]; then
+        custom_batch_size=true
     fi
 done
 
@@ -32,14 +46,13 @@ FLAGS="--activation-store-dir $ACTIVATION_DIR \
 --type batch-top-k \
 --base-model $BASE_MODEL \
 --reasoning-model $REASONING_MODEL \
---text-column message_in_chat_template \
+--text-column message_llama_chat_template \
 --layer $LAYER \
---batch-size $BATCH_SIZE \
 --lr $LR \
 --validate-every-n-steps $VALIDATE_EVERY_N_STEPS \
 --epochs $EPOCHS \
---num-samples $NUM_SAMPLES \
---num-validation-samples $NUM_VALIDATION_SAMPLES \
+--num-tokens $NUM_TOKENS \
+--num-validation-tokens $NUM_VALIDATION_TOKENS \
 --same-init-for-all-layers \
 --init-with-transpose \
 --local-shuffling"
@@ -47,6 +60,16 @@ FLAGS="--activation-store-dir $ACTIVATION_DIR \
 # Only add default mu if not provided in command line arguments
 if [ "$custom_mu" = false ]; then
     FLAGS="$FLAGS --mu $MU"
+fi
+
+# Only add default device if not provided in command line arguments
+if [ "$custom_device" = false ]; then
+    FLAGS="$FLAGS --device $DEVICE"
+fi
+
+# Only add default batch size if not provided in command line arguments
+if [ "$custom_batch_size" = false ]; then
+    FLAGS="$FLAGS --batch-size $BATCH_SIZE"
 fi
 
 additional_flags=$@
