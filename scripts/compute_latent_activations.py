@@ -11,6 +11,7 @@ from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 
+
 from tools.utils import load_latent_df, push_latent_df, apply_masks
 from tools.cc_utils import chat_only_latent_indices, base_only_latent_indices, shared_latent_indices
 from tools.latent_scaler.plot import plot_scaler_histograms

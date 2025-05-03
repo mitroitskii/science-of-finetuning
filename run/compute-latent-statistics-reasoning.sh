@@ -11,7 +11,7 @@ REASONING_SPLIT=test
 BATCH_SIZE=1
 MAX_LENGTH=5000
 
-FLAGS="--crosscoder-path /share/u/troitskiid/projects/science-of-finetuning/checkpoints/DeepScaleR-1.5B-crosscoder-L15-k100-lr1e-04-local-shuffling-CCLoss/checkpoint_90000.pt \
+FLAGS="--crosscoder-path /disk/u/troitskiid/data/checkpoints/DeepScaleR-1.5B-crosscoder-L15-k100-lr1e-04-local-shuffling-CCLoss/ae.pt \
     --base-dataset $BASE_DATASET \
     --reasoning-dataset $REASONING_DATASET \
     --max-length $MAX_LENGTH \
