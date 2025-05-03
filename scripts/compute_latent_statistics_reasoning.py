@@ -17,7 +17,7 @@ def main():
     parser.add_argument(
         "--crosscoder-path",
         type=str,
-        default="/share/u/troitskiid/projects/science-of-finetuning/checkpoints/DeepScaleR-1.5B-crosscoder-L15-k100-lr1e-04-local-shuffling-CCLoss/checkpoint_90000.pt",
+        default="/disk/u/troitskiid/data/checkpoints/DeepScaleR-1.5B-crosscoder-L15-k100-lr1e-04-local-shuffling-CCLoss/ae.pt",
     )
     parser.add_argument("--layer", type=int, default=13)
     parser.add_argument("--base-model", type=str, default="Qwen/Qwen2.5-Math-1.5B")

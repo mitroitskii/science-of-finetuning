@@ -79,9 +79,10 @@ if __name__ == "__main__":
     parser.add_argument("--norm-init-scale", type=float, default=0.005)
     parser.add_argument("--init-with-transpose", action="store_true")
     parser.add_argument("--batch-size", type=int, default=2048)
-    parser.add_argument("--mu", type=float, default=3.6e-2)
+    parser.add_argument("--mu", type=float, default=4e-2)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--k", type=int, default=100)  # K in top-k
+    parser.add_argument("--auxk-alpha", type=float, default=0.0312) # 0.0312 = 1/32
     parser.add_argument("--epochs", type=int, default=2)
     # defines the total number of tokens in the combined dataset the crosscoder is trained on
     parser.add_argument("--num-tokens", type=int, default=400_000_000)
@@ -229,7 +230,7 @@ if __name__ == "__main__":
     sparsity_type = LossType.from_string(args.sparsity_type)
     if args.type == "relu":
         name = (
-            f"{args.base_model.split('/')[-1]}-L{args.layer}-mu{args.mu:.1e}-lr{args.lr:.0e}"
+            f"{args.base_model.split('/')[-1]}-L{args.layer}-mu{args.mu:.1e}-lr{args.lr:.0e}-exp{args.expansion_factor}-bs{args.batch_size}"
             + (f"-{args.run_name}" if args.run_name is not None else "")
             + (f"-local-shuffling" if args.local_shuffling else "")
             + (f"-{get_loss_name(sparsity_type)}")
@@ -237,10 +238,11 @@ if __name__ == "__main__":
         )
     elif args.type == "batch-top-k":
         name = (
-            f"{args.base_model.split('/')[-1]}-L{args.layer}-k{args.k}-lr{args.lr:.0e}"
+            f"{args.base_model.split('/')[-1]}-L{args.layer}-k{args.k}-lr{args.lr:.0e}-exp{args.expansion_factor}-bs{args.batch_size}"
             + (f"-{args.run_name}" if args.run_name is not None else "")
             + (f"-local-shuffling" if args.local_shuffling else "")
             + (f"-{get_loss_name(sparsity_type)}")
+            + (f"-auxk-{args.auxk_alpha}")
         )
     else:
         raise ValueError(f"Invalid crosscoder type: {args.type}")
@@ -299,7 +301,7 @@ if __name__ == "__main__":
             "wandb_name": name,
             "k": args.k,
             "steps": args.max_steps,
-            "auxk_alpha": 1 / 32,
+            "auxk_alpha": args.auxk_alpha,
             "dict_class_kwargs": {
                 "same_init_for_all_layers": args.same_init_for_all_layers,
                 "norm_init_scale": args.norm_init_scale,
@@ -343,7 +345,7 @@ if __name__ == "__main__":
         wandb_entity=args.wandb_entity,
         wandb_project="crosscoder",
         log_steps=50,
-        save_dir=f"checkpoints/{name}",
+        save_dir=f"~/data/checkpoints/{name}",
         steps=args.max_steps,
         save_steps=args.validate_every_n_steps,
     )

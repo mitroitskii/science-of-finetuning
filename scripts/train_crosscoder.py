@@ -325,7 +325,7 @@ if __name__ == "__main__":
         wandb_entity=args.wandb_entity,
         wandb_project="crosscoder",
         log_steps=50,
-        save_dir=f"checkpoints/{name}",
+        save_dir=f"~/data/checkpoints/{name}",
         steps=args.max_steps,
         save_steps=args.validate_every_n_steps,
     )
